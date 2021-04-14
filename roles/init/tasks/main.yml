@@ -1,0 +1,33 @@
+- name: "apt-get update"
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Add certbot repository
+  apt_repository:
+    repo: 'ppa:certbot/certbot'
+
+- name: Install Certbot's nginx package
+  apt:
+    name: python3-certbot-nginx
+    state: present
+# git
+- name: Install git
+  apt:
+    name: ['git']
+    state: latest
+
+- name: Install pm2
+  become_user: "{{ansible_user}}"
+  become: yes
+  shell: |
+    sudo npm install pm2@latest -g
+
+- name: Add IP address of all hosts to all hosts
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '.*{{ item }}$'
+    line: "{{ hostvars[item].ansible_host }} {{item}}"
+    state: present
+  when: hostvars[item].ansible_host is defined
+  with_items: "{{ groups.all }}"

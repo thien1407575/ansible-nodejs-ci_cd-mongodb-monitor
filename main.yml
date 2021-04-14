@@ -1,0 +1,34 @@
+#ansible-playbook main.yml -i hosts.yml 
+- hosts: node
+  remote_user: "{{ remote_user }}"
+  become: yes
+  roles:
+    - init
+    - cloudalchemy.node-exporter
+
+- hosts: mongodb
+  remote_user: "{{ remote_user }}"
+  become: yes
+  roles:
+    - undergreen.mongodb
+    - kostiantyn-nemchenko.mongodb_exporter
+    - geerlingguy.pip
+    - mongo-bk
+
+- hosts: monitor_server
+  remote_user: "{{ remote_user }}"
+  become: yes
+  roles:
+    - cloudalchemy.prometheus
+    - cloudalchemy.grafana
+    
+- hosts: production
+  remote_user: "{{ remote_user }}"
+  become: yes
+  roles:
+    - geerlingguy.nginx
+    - cloudweeb.nginx_exporter
+    - github
+    - jenkin
+    - geerlingguy.docker
+    - geerlingguy.nodejs

@@ -1,0 +1,50 @@
+
+# - name: get ssh key
+#   shell: "cat ./{{ansible_ssh_private_key_file}} | xargs echo -e"
+#   delegate_to: localhost
+#   register: sshcredential
+  
+# https://jenkin.kyc.net.vn/job/node1-bk-db/config.xml get job xml
+# - debug: msg="{{ sshcredential.stderr }}"
+- name: interacting hello an untrusted HTTPS connection
+  jenkins_script:
+    script: |
+      import jenkins.model.Jenkins
+      import com.cloudbees.plugins.credentials.domains.Domain
+      import com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey
+      import com.cloudbees.plugins.credentials.CredentialsScope
+      
+      instance = Jenkins.instance
+      domain = Domain.global()
+      store = instance.getExtensionList(
+        "com.cloudbees.plugins.credentials.SystemCredentialsProvider")[0].getStore()
+      
+      privateKey = new BasicSSHUserPrivateKey.DirectEntryPrivateKeySource(
+      '''
+      {{lookup('file', ansible_ssh_private_key_file)}}
+      '''
+      )
+      
+      sshKey = new BasicSSHUserPrivateKey(
+        CredentialsScope.GLOBAL,
+        "{{host_name}}_test",
+        "{{ansible_user}}",
+        privateKey,
+        "",
+        "{{host_name}}"
+      )
+      
+      store.addCredentials(domain, sshKey)
+    validate_certs: no
+
+
+- name: Create a jenkins job using basic authentication
+  community.general.jenkins_job:
+    config:  "{{ lookup('template', 'config_{{item.framwork}}.xml.j2') }}" 
+    name: "{{item.app_name}}"
+    password: "{{jenkins_admin_password}}"
+    url: "{{jenkin_url}}"
+    user: "{{jenkins_admin_username}}"
+  loop: "{{repos}}"
+  delegate_to: "localhost"
+

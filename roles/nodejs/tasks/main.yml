@@ -1,0 +1,64 @@
+- name: remove old directoy
+  file:
+    path: /home/ubuntu/{{item.app_name}} 
+    state: absent
+    force: yes
+  loop: "{{repos}}"
+  when: item.framwork == "nodejs"
+
+- name: create directoy
+  file:
+    path: /home/ubuntu/{{item.app_name}} 
+    state: directory
+    force: yes
+    owner: ubuntu
+    group: ubuntu
+  loop: "{{repos}}"
+  when: item.framwork == "nodejs"
+
+
+  - name: create vhost
+  template:
+    src: vhost.conf.j2
+    dest: "/etc/nginx/conf.d/{{item.app_name}}.conf"
+  loop: "{{repos}}"
+  when: item.framwork == "nodejs"
+
+  
+- name: clone repo
+  become_user: "{{ansible_user}}"
+  become: yes
+  shell: |
+    eval "$(ssh-agent -s)";ssh-add /home/ubuntu/.ssh/{{item.app_name}}
+    cd /home/ubuntu/{{item.app_name}}
+    git clone  {{item.git_ssh}}
+    cd /home/ubuntu/{{item.app_name}}/{{item.repo}}
+    git checkout {{item.branch}}
+  loop: "{{repos}}"
+  when: item.framwork == "nodejs"
+
+
+- name: install package
+  become_user: "{{ansible_user}}"
+  become: yes
+  shell: |
+    cd /home/ubuntu/{{item.app_name}}/{{item.repo}}
+    npm i
+  loop: "{{repos}}"
+
+- name: start nodejs
+  become_user: "{{ansible_user}}"
+  become: yes
+  shell: |
+    cd /home/ubuntu/{{item.app_name}}/{{item.repo}}
+    PORT={{item.expose}} pm2 start {{item.start}} --name {{item.app_name}}
+  loop: "{{repos}}"
+  when: item.framwork == "nodejs"
+
+- name: start nodejs
+  become_user: root
+  become: yes
+  shell: |
+    sudo pm2 startup 
+    pm2 save
+  

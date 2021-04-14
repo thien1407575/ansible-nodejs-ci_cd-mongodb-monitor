@@ -1,0 +1,15 @@
+# from galaxy
+- src: geerlingguy.nginx
+- src: kostiantyn-nemchenko.mongodb_exporter
+- src: undergreen.mongodb
+- src: cloudweeb.nginx_exporter
+- src: cloudalchemy.grafana
+- src: geerlingguy.docker
+- src: cloudalchemy.prometheus
+- src: cloudalchemy.node-exporter
+- src: geerlingguy.nodejs
+- src: geerlingguy.redis
+- src: geerlingguy.pip
+
+
+# ansible-galaxy install -r requirements.yml 

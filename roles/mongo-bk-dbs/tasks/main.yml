@@ -1,0 +1,41 @@
+
+- name: Install awscli
+  apt:
+    name: awscli
+    state: present
+
+- name: create directoy
+  file:
+    path: /home/ubuntu/db_backups
+    state: directory
+    force: yes
+    owner: ubuntu
+    group: ubuntu
+
+- name: create sub db_bk
+  file:
+    path: "/home/ubuntu/db_backups/{{item.db}}"
+    state: directory
+    force: yes
+    owner: ubuntu
+    group: ubuntu
+  loop: "{{list_db}}"
+
+- name: create aws config
+  become_user: "{{ansible_user}}"
+  become: yes
+  shell: |
+    aws configure set aws_access_key_id {{aws_access_key_id}}
+    aws configure set aws_secret_access_key {{aws_secret_access_key}}
+    aws configure set region {{region}}
+
+- name: Create a jenkins job using basic authentication
+  community.general.jenkins_job:
+    #config:  "{{'/tmp/'+item.repo+'.xml'}}"
+    config:  "{{ lookup('template', 'job.xml.j2') }}" 
+    name: "{{host_name}}_{{item.db}}_backup"
+    password: "{{jenkins_admin_password}}"
+    url: "{{jenkin_url}}"
+    user: "{{jenkins_admin_username}}"
+  delegate_to: "localhost"
+  loop: "{{list_db}}"

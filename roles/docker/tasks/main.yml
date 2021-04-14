@@ -1,0 +1,70 @@
+
+- name: remove old directoy
+  file:
+    path: /home/ubuntu/{{item.app_name}} 
+    state: absent
+    force: yes
+  loop: "{{repos}}"
+  when: item.framwork == "docker"
+
+- name: create directoy
+  file:
+    path: /home/ubuntu/{{item.app_name}} 
+    state: directory
+    force: yes
+    owner: ubuntu
+    group: ubuntu
+  loop: "{{repos}}"
+  when: item.framwork == "docker"
+
+- name: create vhost
+  template:
+    src: vhost.conf.j2
+    dest: "/etc/nginx/conf.d/{{item.app_name}}.conf"
+  loop: "{{repos}}"
+  when: item.framwork == "docker"
+
+- name: clone repo
+  become_user: "{{ansible_user}}"
+  become: yes
+  shell: |
+    eval "$(ssh-agent -s)";ssh-add /home/ubuntu/{{item.app_name}}_ssh_rsa
+    cd /home/ubuntu/{{item.app_name}}
+    git clone  {{item.git_ssh}}
+  loop: "{{repos}}"
+  when: item.framwork == "docker"
+
+# - name: Build an image 
+#   docker_image:
+#     path: "/home/ubuntu/{{item.app_name}}/{{item.repo}}"
+#     name: "{{item.app_name}}"
+#   loop: "{{repos}}"
+
+# - name: Re-create container
+#   docker_container:
+#     name: "{{item.app_name}}"
+#     image: "{{item.app_name}}"
+#     restart: yes
+#     ports:
+#       - "{{item.expose}}:{{item.port}}"
+#   loop: "{{repos}}"
+
+- name: Build an image 
+  shell: |
+    cd /home/ubuntu/{{item.app_name}}/{{item.repo}}
+    docker build . -t {{item.app_name}}
+  loop: "{{repos}}"
+
+- name: run image
+  shell: |
+    docker run -p {{item.expose}}:{{item.port}} -d --name={{item.app_name}} {{item.app_name}}
+  loop: "{{repos}}"
+  when: item.framwork == "docker"
+  
+# - name: check docker run success
+#   uri: 
+#     url: "localhost:{{item.expose}}/"
+#     method: GET
+#   register: ret
+#   failed_when: ret.status !=200
+#   loop: "{{repos}}"
