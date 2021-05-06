@@ -74,7 +74,7 @@ all:
                             branch: "branch"
                             git_ssh: "git_ssh"
                             start: bin/www
-                            framwork: "nodejs" # nodejs|docker|vue
+                            framework: "nodejs" # nodejs|docker|vue
                             domain: "test.com"
 
 

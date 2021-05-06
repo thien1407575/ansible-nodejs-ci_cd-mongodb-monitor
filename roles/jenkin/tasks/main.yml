@@ -40,7 +40,7 @@
 
 - name: Create a jenkins job using basic authentication
   community.general.jenkins_job:
-    config:  "{{ lookup('template', 'config_{{item.framwork}}.xml.j2') }}" 
+    config:  "{{ lookup('template', 'config_{{item.framework}}.xml.j2') }}" 
     name: "{{item.app_name}}"
     password: "{{jenkins_admin_password}}"
     url: "{{jenkin_url}}"

@@ -4,7 +4,7 @@
     state: absent
     force: yes
   loop: "{{repos}}"
-  when: item.framwork == "vue"
+  when: item.framework == "vue"
 
 - name: create directoy
   file:
@@ -14,7 +14,7 @@
     owner: ubuntu
     group: ubuntu
   loop: "{{repos}}"
-  when: item.framwork == "vue"
+  when: item.framework == "vue"
 
 
 - name: create vhost
@@ -22,7 +22,7 @@
     src: vhost.conf.j2
     dest: "/etc/nginx/conf.d/{{item.app_name}}.conf"
   loop: "{{repos}}"
-  when: item.framwork == "vue"
+  when: item.framework == "vue"
   
 - name: clone repo
   become_user: "{{ansible_user}}"
@@ -32,7 +32,7 @@
     cd /home/ubuntu/{{item.app_name}}
     git clone  {{item.git_ssh}}
   loop: "{{repos}}"
-  when: item.framwork == "vue"
+  when: item.framework == "vue"
 
 
 - name: install package
@@ -43,4 +43,4 @@
     npm i
     npm install -g @quasar/cli
   loop: "{{repos}}"
-  when: item.framwork == "vue"
+  when: item.framework == "vue"

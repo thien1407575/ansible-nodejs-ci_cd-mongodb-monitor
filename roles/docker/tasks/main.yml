@@ -5,7 +5,7 @@
     state: absent
     force: yes
   loop: "{{repos}}"
-  when: item.framwork == "docker"
+  when: item.framework == "docker"
 
 - name: create directoy
   file:
@@ -15,14 +15,14 @@
     owner: ubuntu
     group: ubuntu
   loop: "{{repos}}"
-  when: item.framwork == "docker"
+  when: item.framework == "docker"
 
 - name: create vhost
   template:
     src: vhost.conf.j2
     dest: "/etc/nginx/conf.d/{{item.app_name}}.conf"
   loop: "{{repos}}"
-  when: item.framwork == "docker"
+  when: item.framework == "docker"
 
 - name: clone repo
   become_user: "{{ansible_user}}"
@@ -32,7 +32,7 @@
     cd /home/ubuntu/{{item.app_name}}
     git clone  {{item.git_ssh}}
   loop: "{{repos}}"
-  when: item.framwork == "docker"
+  when: item.framework == "docker"
 
 # - name: Build an image 
 #   docker_image:
@@ -59,7 +59,7 @@
   shell: |
     docker run -p {{item.expose}}:{{item.port}} -d --name={{item.app_name}} {{item.app_name}}
   loop: "{{repos}}"
-  when: item.framwork == "docker"
+  when: item.framework == "docker"
   
 # - name: check docker run success
 #   uri: 
